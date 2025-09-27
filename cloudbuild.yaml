@@ -1,5 +1,5 @@
 steps:
-  # Paso 1: pruebas
+  # Paso 1: correr pruebas unitarias
   - name: python:3.11-slim
     entrypoint: bash
     args:
@@ -8,18 +8,19 @@ steps:
         pip install --no-cache-dir -r requirements.txt
         pytest --maxfail=1 --disable-warnings -q
 
-  # Paso 2: build docker image
+  # Paso 2: construir imagen Docker
   - name: gcr.io/cloud-builders/docker
     args: [
       "build", "-t", "us-central1-docker.pkg.dev/the-respect-435301-u2/fastapi-repo/fastapi-app:$SHORT_SHA", "."
     ]
 
+  # Paso 3: subir imagen a Artifact Registry
   - name: gcr.io/cloud-builders/docker
     args: [
       "push", "us-central1-docker.pkg.dev/the-respect-435301-u2/fastapi-repo/fastapi-app:$SHORT_SHA"
     ]
 
-  # Paso 3: deploy en Cloud Run
+  # Paso 4: desplegar en Cloud Run
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args: [
