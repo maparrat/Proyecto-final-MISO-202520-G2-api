@@ -22,7 +22,8 @@ steps:
     args:
       - -c
       - |
-        DATABASE_URL="postgresql+psycopg2://postgres:TuPasswordSegura123@/proveedores?host=/cloudsql/$_CLOUDSQL_CONNECTION_NAME"
+        echo "Desplegando con conexión a: $_CLOUDSQL_CONNECTION_NAME"
+        echo "Usando DATABASE_URL: $_DATABASE_URL"
 
         gcloud run deploy fastapi-app \
           --image gcr.io/$PROJECT_ID/fastapi-app \
@@ -30,15 +31,16 @@ steps:
           --region us-central1 \
           --allow-unauthenticated \
           --add-cloudsql-instances $_CLOUDSQL_CONNECTION_NAME \
-          --set-env-vars DATABASE_URL=$DATABASE_URL \
+          --set-env-vars DATABASE_URL=$_DATABASE_URL \
           --set-env-vars CLOUDSQL_CONNECTION_NAME=$_CLOUDSQL_CONNECTION_NAME
 
 images:
   - 'gcr.io/$PROJECT_ID/fastapi-app'
 
-# 🔧 Aquí declaramos las sustituciones personalizadas
+# ✅ Sustituciones personalizadas (deben comenzar con "_")
 substitutions:
   _CLOUDSQL_CONNECTION_NAME: "the-respect-435301-u2:us-central1:proveedores-db"
+  _DATABASE_URL: "postgresql+psycopg2://postgres:TuPasswordSegura123@/proveedores?host=/cloudsql/the-respect-435301-u2:us-central1:proveedores-db"
 
 options:
   logging: CLOUD_LOGGING_ONLY
