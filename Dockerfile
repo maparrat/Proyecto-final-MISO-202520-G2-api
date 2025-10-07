@@ -1,15 +1,18 @@
-# Imagen base ligera
+# Imagen base
 FROM python:3.11-slim
 
-# Configuración del contenedor
+# Directorio de trabajo
 WORKDIR /app
 
 # Instalar dependencias
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar app
-COPY ./app ./app
+# Copiar el resto del código
+COPY . .
 
-# Comando para correr FastAPI con Uvicorn
+# Puerto (Cloud Run usará PORT automáticamente)
+ENV PORT=8080
+
+# Ejecutar la app
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

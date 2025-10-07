@@ -1,35 +1,38 @@
 steps:
-# Paso 1: Instalar dependencias y correr pruebas
-- name: 'python:3.11-slim'
-  entrypoint: bash
-  args:
-    - -c
-    - |
-      pip install --no-cache-dir -r requirements.txt
-      pytest --maxfail=1 --disable-warnings -q
+  # Paso 1: Instalar dependencias y ejecutar pruebas
+  - name: 'python:3.11-slim'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        pip install --no-cache-dir -r requirements.txt
+        pytest --maxfail=1 --disable-warnings -q
 
-# Paso 2: Construir imagen Docker
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/fastapi-app', '.']
+  # Paso 2: Construir la imagen Docker
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/fastapi-app', '.']
 
-# Paso 3: Push al Container Registry
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/$PROJECT_ID/fastapi-app']
+  # Paso 3: Push al Container Registry (Artifact Registry o Container Registry)
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/fastapi-app']
 
-# Paso 4: Desplegar en Cloud Run
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  entrypoint: gcloud
-  args:
-    [
-      'run', 'deploy', 'fastapi-app',
-      '--image', 'gcr.io/$PROJECT_ID/fastapi-app',
-      '--platform', 'managed',
-      '--region', 'us-central1',
-      '--allow-unauthenticated'
-    ]
+  # Paso 4: Desplegar en Cloud Run con conexión a Cloud SQL
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        CLOUDSQL_CONNECTION_NAME="the-respect-435301-u2:us-central1:proveedores-db"
+        DATABASE_URL="postgresql+psycopg2://postgres:TuPasswordSegura123@/proveedores?host=/cloudsql/$CLOUDSQL_CONNECTION_NAME"
+
+        gcloud run deploy fastapi-app \
+          --image gcr.io/$PROJECT_ID/fastapi-app \
+          --platform managed \
+          --region us-central1 \
+          --allow-unauthenticated \
+          --add-cloudsql-instances $CLOUDSQL_CONNECTION_NAME \
+          --set-env-vars DATABASE_URL=$DATABASE_URL \
+          --set-env-vars CLOUDSQL_CONNECTION_NAME=$CLOUDSQL_CONNECTION_NAME
 
 images:
-- 'gcr.io/$PROJECT_ID/fastapi-app'
-
-options:
-  logging: CLOUD_LOGGING_ONLY
+  - 'gcr.io/$PROJECT_ID/fastapi-app'
