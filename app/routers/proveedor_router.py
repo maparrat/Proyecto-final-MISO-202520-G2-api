@@ -1,8 +1,10 @@
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models.proveedor import Proveedor
 from app.schemas.proveedor_schema import ProveedorCreate, ProveedorOut
+from fastapi_cache.decorator import cache
 
 router = APIRouter(prefix="/proveedores", tags=["Proveedores"])
 
@@ -26,5 +28,6 @@ def crear_proveedor(proveedor: ProveedorCreate, db: Session = Depends(get_db)):
     return nuevo_proveedor
 
 @router.get("/", response_model=list[ProveedorOut])
-def listar_proveedores(db: Session = Depends(get_db)):
-    return db.query(Proveedor).all()
+@cache(expire=60)  # cache for 60 seconds
+def listar_proveedores(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    return db.query(Proveedor).offset(skip).limit(limit).all()
