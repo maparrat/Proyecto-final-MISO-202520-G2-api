@@ -15,12 +15,20 @@ def get_db():
     finally:
         db.close()
 
+
+
+
 @router.post("/", response_model=ProveedorOut)
 def crear_proveedor(proveedor: ProveedorCreate, db: Session = Depends(get_db)):
     nuevo_proveedor = Proveedor(
         nombre=proveedor.nombre,
+        id_tax=proveedor.id_tax,
+        direccion=proveedor.direccion,
+        telefono=proveedor.telefono,
+        correo=proveedor.correo,
         contacto=proveedor.contacto,
-        telefono=proveedor.telefono
+        estado=proveedor.estado,
+        certificado=proveedor.certificado
     )
     db.add(nuevo_proveedor)
     db.commit()
