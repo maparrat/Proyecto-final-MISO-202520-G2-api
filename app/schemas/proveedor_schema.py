@@ -1,28 +1,42 @@
 from pydantic import BaseModel
+from datetime import date
 
-class ProveedorCreate(BaseModel):
-
+class CertificadoBase(BaseModel):
     nombre: str
-    id_tax: str | None = None
-    direccion: str | None = None
-    telefono: str | None = None
-    correo: str | None = None
-    contacto: str | None = None
-    estado: str | None = None
-    certificado: str | None = None
+    cuerpoCertificador: str
+    fechaCertificacion: date
+    fechaVencimiento: date
+    urlDocumento: str
 
 
-class ProveedorOut(BaseModel):
+class CertificadoCreate(CertificadoBase):
+    pass
+
+
+class CertificadoOut(CertificadoBase):
     id: int
-    nombre: str
-    id_tax: str | None = None
-    direccion: str | None = None
-    telefono: str | None = None
-    correo: str | None = None
-    contacto: str | None = None
-    estado: str | None = None
-    certificado: str | None = None
 
     class Config:
-        from_attributes = True  # reemplaza orm_mode en Pydantic v2
- 
+        from_attributes = True
+
+
+class ProveedorBase(BaseModel):
+    nombre: str
+    id_tax: str | None = None
+    direccion: str | None = None
+    telefono: str | None = None
+    correo: str | None = None
+    contacto: str | None = None
+    estado: str | None = None
+
+
+class ProveedorCreate(ProveedorBase):
+    certificado: CertificadoCreate
+
+
+class ProveedorOut(ProveedorBase):
+    id: int
+    certificado: CertificadoOut | None = None
+
+    class Config:
+        from_attributes = True

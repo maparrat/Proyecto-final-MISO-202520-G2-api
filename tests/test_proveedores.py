@@ -36,36 +36,46 @@ client = TestClient(app)
 # ----------------------------
 # Tests
 # ----------------------------
+
 def test_crear_proveedor():
-    response = client.post(
-        "/proveedores/",
-        json={
-            "nombre": "Proveedor Test",
-            "id_tax": "123456789",
-            "direccion": "Calle 123",
-            "telefono": "987654321",
-            "correo": "proveedor@test.com",
-            "contacto": "Juan",
-            "estado": "activo",
-            "certificado": "True"
-           
+    proveedor_data = {
+        "nombre": "Proveedor Test",
+        "id_tax": "123456789",
+        "direccion": "Calle 123",
+        "telefono": "987654321",
+        "correo": "proveedor@test.com",
+        "contacto": "Juan",
+        "estado": "activo",
+        "certificado": {
+            "nombre": "Certificación",
+            "cuerpoCertificador": "Esto es el cuerpo",
+            "fechaCertificacion": "2025-10-07",
+            "fechaVencimiento": "2025-10-18",
+            "urlDocumento": "https://google.com"
         }
-    )
-    assert response.status_code == 200
+    }
+
+    response = client.post("/proveedores/", json=proveedor_data)
+    assert response.status_code == 200, f"Error: {response.text}"
+
     data = response.json()
-    assert data["nombre"] == "Proveedor Test"
-    assert data["id_tax"] == "123456789"
-    assert data["direccion"] == "Calle 123"
-    assert data["telefono"] == "987654321"
-    assert data["correo"] == "proveedor@test.com"
-    assert data["contacto"] == "Juan"
-    assert data["estado"] == "activo"
-    assert data["certificado"] == "True"
+    assert data["nombre"] == proveedor_data["nombre"]
+    assert data["id_tax"] == proveedor_data["id_tax"]
+    assert data["correo"] == proveedor_data["correo"]
+    assert "certificado" in data
+    assert data["certificado"]["nombre"] == "Certificación"
 
 
 def test_listar_proveedores():
-    response = client.get("/proveedores/")
-    assert response.status_code == 200
+    response = client.get("/proveedores/?page=1&limit=10")
+    assert response.status_code == 200, f"Error: {response.text}"
+
     data = response.json()
-    assert isinstance(data, list)
-    assert len(data) >= 1
+    assert "data" in data
+    assert "total" in data
+    assert "page" in data
+    assert "limit" in data
+    assert "totalPages" in data
+
+    assert isinstance(data["data"], list)
+    assert len(data["data"]) >= 1
