@@ -1,12 +1,13 @@
 from pydantic import BaseModel
 from datetime import date
+from typing import Optional
 
 class CertificadoBase(BaseModel):
     nombre: str
-    cuerpoCertificador: str
-    fechaCertificacion: date
-    fechaVencimiento: date
-    urlDocumento: str
+    cuerpoCertificador: str| None = None
+    fechaCertificacion: date| None = None
+    fechaVencimiento: date| None = None
+    urlDocumento: str| None = None
 
 
 class CertificadoCreate(CertificadoBase):
@@ -36,7 +37,7 @@ class ProveedorCreate(ProveedorBase):
 
 class ProveedorOut(ProveedorBase):
     id: int
-    certificado: CertificadoOut | None = None
+    certificado: Optional[CertificadoOut] = None
 
     class Config:
         from_attributes = True
