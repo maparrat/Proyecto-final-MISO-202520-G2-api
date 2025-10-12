@@ -32,7 +32,7 @@ class ProveedorBase(BaseModel):
 
 
 class ProveedorCreate(ProveedorBase):
-    certificado: CertificadoCreate
+    certificado: Optional[CertificadoOut] = None
 
 
 class ProveedorOut(ProveedorBase):
