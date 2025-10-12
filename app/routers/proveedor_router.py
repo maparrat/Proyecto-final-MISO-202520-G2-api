@@ -20,10 +20,9 @@ def get_db():
 
 
 
-
 @router.post("/", response_model=ProveedorOut)
 def crear_proveedor(proveedor: ProveedorCreate, db: Session = Depends(get_db)):
-    # Crear proveedor
+    # Crear el proveedor base
     nuevo_proveedor = Proveedor(
         nombre=proveedor.nombre,
         id_tax=proveedor.id_tax,
@@ -34,19 +33,22 @@ def crear_proveedor(proveedor: ProveedorCreate, db: Session = Depends(get_db)):
         estado=proveedor.estado
     )
 
-    # Crear certificado asociado
-    certificado_data = proveedor.certificado
-    nuevo_certificado = Certificado(
-        nombre=certificado_data.nombre,
-        cuerpoCertificador=certificado_data.cuerpoCertificador,
-        fechaCertificacion=certificado_data.fechaCertificacion,
-        fechaVencimiento=certificado_data.fechaVencimiento,
-        urlDocumento=certificado_data.urlDocumento,
-        proveedor=nuevo_proveedor  # vincula el certificado con el proveedor
-    )
-
     db.add(nuevo_proveedor)
-    db.add(nuevo_certificado)
+
+    # Si llega un certificado, se crea y asocia
+    if proveedor.certificado is not None:
+        certificado_data = proveedor.certificado
+        nuevo_certificado = Certificado(
+            nombre=certificado_data.nombre,
+            cuerpoCertificador=certificado_data.cuerpoCertificador,
+            fechaCertificacion=certificado_data.fechaCertificacion,
+            fechaVencimiento=certificado_data.fechaVencimiento,
+            urlDocumento=certificado_data.urlDocumento,
+            proveedor=nuevo_proveedor  # relación bidireccional
+        )
+        db.add(nuevo_certificado)
+
+    # Confirmar cambios
     db.commit()
     db.refresh(nuevo_proveedor)
     return nuevo_proveedor
